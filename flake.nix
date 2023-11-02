@@ -7,11 +7,22 @@
 		flake-utils.lib.eachDefaultSystem (system: 
 			let
 				pkgs = nixpkgs.legacyPackages.${system};
+				llvm = pkgs.llvmPackages_latest;
 			in {
 				devShell = pkgs.mkShell {
 					buildInputs = with pkgs; [
-						dart
 						flutter
+						# Didn't use to ask for this but whateva
+						cmake
+						# Linux deps
+						llvm.libstdcxxClang
+						llvm.libcxx
+						clang-tools
+						llvm.lldb
+						ninja
+						pkg-config
+						gtk3
+
 					];
 					CHROME_EXECUTABLE = "google-chrome-stable";
 				};
