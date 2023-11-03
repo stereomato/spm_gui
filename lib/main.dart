@@ -5,19 +5,52 @@ import 'package:spm_dart/spm_dart.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => SPMPageHandler(),
-      child: const SPMgui(),
-    ),
-  );
+  runApp(MultiProvider(
+    providers: [
+      // For the page changing
+      ChangeNotifierProvider<SPMpageHandler>(
+        create: (context) => SPMpageHandler(),
+      ),
+      // For the passphrase generator page
+      ChangeNotifierProvider<SPMgeneratorHandler>(
+        create: (context) => SPMgeneratorHandler(),
+      ),
+    ],
+    child: const SPMgui(),
+  ));
 }
 
-class SPMPageHandler with ChangeNotifier {
+class SPMpageHandler with ChangeNotifier {
   int currentPage = 0;
 
   void switchPage(int value) {
     currentPage = value;
+    notifyListeners();
+  }
+}
+
+class SPMgeneratorHandler with ChangeNotifier {
+  bool _typoify = false;
+  bool _randomizeSeparators = false;
+  int _length = 1;
+  String _passphrase = '';
+  void updateTypoify(bool value) {
+    _typoify = value;
+    notifyListeners();
+  }
+
+  void updateRandomizeSeparators(bool value) {
+    _randomizeSeparators = value;
+    notifyListeners();
+  }
+
+  void updateLength(int value) {
+    _length = value;
+    notifyListeners();
+  }
+
+  void updatePassphrase(String value) {
+    _passphrase = value;
     notifyListeners();
   }
 }
@@ -50,13 +83,28 @@ class _SPMguiScreen extends State<SPMgui> {
         ),
         // Here we switch between the page setup
 
-        body: Consumer<SPMPageHandler>(
+        body: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
                   0 => SPMguiGeneratorPage(),
                   1 => Text('To be built'),
                   _ => Text('whoops'),
                 }),
+
         bottomNavigationBar: const SPMguiNavigationBar(),
+        // TODO: there's a bug related to this. Changes to the bools or the length of the passphrase only get applied after the 2nd re-generation of the passphrase (aka it takes two clicks on the generate passphrase button to generate a passphrase the way the user wants to)
+        floatingActionButton: Consumer<SPMpageHandler>(
+            builder: (context, value, child) => switch (value.currentPage) {
+                  0 => SPMguiGeneratorPageFAB(
+                      randomizeSeparators:
+                          Provider.of<SPMgeneratorHandler>(context)
+                              ._randomizeSeparators,
+                      typoify:
+                          Provider.of<SPMgeneratorHandler>(context)._typoify,
+                      length: Provider.of<SPMgeneratorHandler>(context)._length,
+                    ),
+                  1 => Text('To be built'),
+                  _ => Text('whoops'),
+                }),
       ),
     );
   }
@@ -79,6 +127,9 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
   bool _typoify = false;
   bool _randomizeSeparators = false;
 
+  // These functions update the UI
+  // on the onSubmitted/Changed bits of the widgets we use extra functions to update the values for the generator button
+
   void _onTypoifyChanged(bool value) {
     setState(() {
       _typoify = value;
@@ -97,15 +148,6 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
     });
   }
 
-  String _passphrase = "Not even once yet...";
-  var random = Random();
-  void _generatePassphrase() async {
-    // TODO: add a button to copy this to the clipboard
-    _passphrase = await constructPassphrase(
-        _length, _randomizeSeparators, _typoify, "dictionary.txt");
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -116,13 +158,24 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
               'Typoification',
             ),
             value: _typoify,
-            onChanged: _onTypoifyChanged),
+            //onChanged: _onTypoifyChanged),
+            onChanged: (bool value) {
+              _onTypoifyChanged(value);
+              var generatorSettings = context.read<SPMgeneratorHandler>();
+              generatorSettings.updateTypoify(value);
+              print(generatorSettings._typoify);
+            }),
         SwitchListTile(
             title: const Text(
               'Randomized separators',
             ),
             value: _randomizeSeparators,
-            onChanged: _onRandomizeSeparatorsChanged),
+            onChanged: (bool value) {
+              _onRandomizeSeparatorsChanged(value);
+              var generatorSettings = context.read<SPMgeneratorHandler>();
+              generatorSettings.updateRandomizeSeparators(value);
+              print(generatorSettings._randomizeSeparators);
+            }),
         ListTile(
           title: const Text('Number of words'),
           trailing: SizedBox(
@@ -132,7 +185,13 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
                 border: OutlineInputBorder(),
                 labelText: 'Length',
               ),
-              onSubmitted: (value) => _updateLength(int.parse(value)),
+              //onSubmitted: (value) => _updateLength(int.parse(value)),
+              onSubmitted: (value) {
+                _updateLength(int.parse(value));
+                var generatorSettings = context.read<SPMgeneratorHandler>();
+                generatorSettings.updateLength(int.parse(value));
+                print(generatorSettings._length);
+              },
             ),
           ),
         ),
@@ -143,9 +202,10 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
             child: TextField(
               enabled: false,
               decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: _passphrase,
-              ),
+                  border: const OutlineInputBorder(),
+                  //labelText: context.read<SPMgeneratorHandler>()._passphrase),
+                  labelText:
+                      Provider.of<SPMgeneratorHandler>(context)._passphrase),
             ),
           ),
         ),
@@ -154,15 +214,48 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
   }
 }
 
-/*
-          floatingActionButton: FloatingActionButton(
-            onPressed: _generatePassphrase,
-            tooltip: 'Generate a passphrase with the defined settings above',
-            child: const Icon(Icons.autorenew),
-          ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.endContained,
-          bottomNavigationBar: const SPMguiNavigationBar()),*/
+class SPMguiGeneratorPageFAB extends StatefulWidget {
+  const SPMguiGeneratorPageFAB(
+      {super.key,
+      required this.randomizeSeparators,
+      required this.typoify,
+      required this.length});
+  final bool randomizeSeparators;
+  final bool typoify;
+  final int length;
+
+  @override
+  State<SPMguiGeneratorPageFAB> createState() => _SPMguiGeneratorPageFAB();
+}
+
+class _SPMguiGeneratorPageFAB extends State<SPMguiGeneratorPageFAB> {
+  String _passphrase = "";
+  void _generatePassphrase() async {
+    // TODO: add a button to copy this to the clipboard
+    _passphrase = await constructPassphrase(widget.length,
+        widget.randomizeSeparators, widget.typoify, "dictionary.txt");
+    ;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        setState(() {
+          print("FAB");
+          print(widget.length);
+          print(widget.randomizeSeparators);
+          print(widget.typoify);
+          _generatePassphrase();
+          var generatorSettings = context.read<SPMgeneratorHandler>();
+          generatorSettings.updatePassphrase(_passphrase);
+        });
+      },
+      tooltip: 'Generate a passphrase with the defined settings above',
+      child: const Icon(Icons.autorenew),
+    );
+  }
+}
 
 class SPMguiNavigationBar extends StatefulWidget {
   const SPMguiNavigationBar({super.key});
@@ -179,7 +272,7 @@ class _SPMguiNavigationBarState extends State<SPMguiNavigationBar> {
       onDestinationSelected: (int index) {
         setState(() {
           currentPageIndex = index;
-          var switcher = context.read<SPMPageHandler>();
+          var switcher = context.read<SPMpageHandler>();
           switcher.switchPage(currentPageIndex);
         });
       },
