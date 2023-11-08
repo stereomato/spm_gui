@@ -19,6 +19,7 @@ class _SPMguiNavigationBarState extends State<SPMguiNavigationBar> {
           currentPageIndex = index;
           Provider.of<SPMpageHandler>(context, listen: false)
               .switchPage(currentPageIndex);
+          Provider.of<SPMgeneratorHandler>(context, listen: false).reset();
         });
       },
       selectedIndex: currentPageIndex,

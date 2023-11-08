@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
 import 'spmgui_changenotifiers.dart';
+import 'spmgui_buttons.dart';
 
 // page for the generator
 class SPMguiGeneratorPage extends StatefulWidget {
@@ -20,6 +20,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
   int _length = 1;
   bool _typoify = false;
   bool _randomizeSeparators = false;
+  String _name = '';
 
   // These functions update the UI
   // on the onSubmitted/Changed bits of the widgets we use extra functions to update the values for the generator button
@@ -28,7 +29,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
     setState(() {
       _typoify = value;
       Provider.of<SPMgeneratorHandler>(context, listen: false)
-          .updateTypoify(value);
+          .toggleTypoify(value);
     });
   }
 
@@ -36,7 +37,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
     setState(() {
       _randomizeSeparators = value;
       Provider.of<SPMgeneratorHandler>(context, listen: false)
-          .updateRandomizeSeparators(value);
+          .toggleRandomizeSeparators(value);
     });
   }
 
@@ -48,31 +49,11 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
     });
   }
 
-  Icon _forTheHideButton = Icon(Icons.visibility);
-  //bool _obscurePassphrase = false;
-  void _onHidePassphraseButtonPressed() {
+  void _onNameChanged(String value) {
     setState(() {
-      switch (_forTheHideButton) {
-        case Icon(icon: Icons.visibility):
-          _forTheHideButton = Icon(Icons.visibility_off);
-          Provider.of<SPMgeneratorHandler>(context, listen: false)
-              .toggleHiddenPassphrase(true);
-          break;
-        case Icon(icon: Icons.visibility_off):
-          _forTheHideButton = Icon(Icons.visibility);
-          Provider.of<SPMgeneratorHandler>(context, listen: false)
-              .toggleHiddenPassphrase(false);
-          break;
-        default:
-      }
+      _name = value;
+      Provider.of<SPMgeneratorHandler>(context, listen: false).setName(value);
     });
-  }
-
-  void _onCopyToClipboardButtonPressed() {
-    // TODO: display a toast saying "nothing to copy" when the passphrase is empty
-    Clipboard.setData(ClipboardData(
-        text: Provider.of<SPMgeneratorHandler>(context, listen: false)
-            .getPassphrase(false)));
   }
 
   @override
@@ -80,6 +61,21 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
     return ListView(
       padding: const EdgeInsets.only(bottom: 88),
       children: <Widget>[
+        ListTile(
+          title: const Text('Name'),
+          trailing: SizedBox(
+            width: 250,
+            height: 45,
+            child: TextField(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (value) => _onLengthChanged(int.parse(value)),
+                // update value as soon as user writes
+                // i think it's better this way
+                onChanged: (value) => _onNameChanged(value)),
+          ),
+        ),
         SwitchListTile(
             title: const Text(
               'Typoification',
@@ -100,7 +96,6 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
             child: TextField(
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: 'Length',
               ),
               onSubmitted: (value) => _onLengthChanged(int.parse(value)),
               // update value as soon as user writes
@@ -127,8 +122,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
                   //labelText: context.read<SPMgeneratorHandler>()._passphrase),
                   // why doesnt this get updated immediately?
                   labelText: Provider.of<SPMgeneratorHandler>(context)
-                      .getPassphrase(Provider.of<SPMgeneratorHandler>(context)
-                          .getHidePassphrase())),
+                      .getPassphrase()),
             ),
           ),
         ),
@@ -137,23 +131,128 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Spacer(),
+            Spacer(),
             // TODO: Improve the look of these buttons
             Expanded(
                 child: ListTile(
-              trailing: FilledButton.tonal(
-                  onPressed: _onCopyToClipboardButtonPressed,
-                  child: const Icon(Icons.content_copy)),
+              trailing: SPMguiButtonCopyCliboard(),
             )),
             Flexible(
               fit: FlexFit.loose,
-              child: FilledButton(
-                  onPressed: _onHidePassphraseButtonPressed,
-                  child: _forTheHideButton),
+              child: SPMguiGeneratePassphraseButton(
+                length: _length,
+                randomizeSeparators: _randomizeSeparators,
+                typoify: _typoify,
+              ),
+            ),
+            const Padding(padding: EdgeInsets.only(right: 20)),
+            const Flexible(
+              fit: FlexFit.loose,
+              child: SPMguitogglePassphraseVisibilityButton(
+                page: 0,
+                name: '',
+              ),
             ),
             const Padding(padding: EdgeInsets.only(right: 30)),
           ],
         )
+      ],
+    );
+  }
+}
+
+class SPMguiVaultPage extends StatefulWidget {
+  const SPMguiVaultPage({super.key});
+
+  @override
+  State<SPMguiVaultPage> createState() => _SPMguiVaultPageState();
+}
+
+class _SPMguiVaultPageState extends State<SPMguiVaultPage> {
+  // properties of each entry
+  int index = 0;
+  String name = '';
+  String passphrase = '';
+
+  ListEntry _actualBuildEntries(
+      Map<String, Map<bool, String>> inputEntries, int index) {
+    String finalName = inputEntries.keys.toList()[index];
+    String finalPassphrase =
+        Provider.of<SPMvaultHandler>(context).getPassphrase(finalName);
+    //print('length: ${inputEntries.length}');
+    return ListEntry(name: finalName, passphrase: finalPassphrase);
+  }
+
+  List<Widget> buildList() {
+    List<Widget> rowList = [];
+    Map<String, Map<bool, String>> inputEntries =
+        Provider.of<SPMvaultHandler>(context).getEntries();
+    for (var index = 1; index < inputEntries.length; index += 1) {
+      rowList.add(_actualBuildEntries(inputEntries, index));
+    }
+    return rowList;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 88),
+      children: buildList(),
+    );
+  }
+}
+// Every passphrase entry should have an index to know which thing we are acting
+// upon
+
+class ListEntry extends StatefulWidget {
+  const ListEntry({super.key, required this.name, required this.passphrase});
+  final String name;
+  final String passphrase;
+  // index perhaps not needed
+
+  @override
+  State<ListEntry> createState() => _ListEntryState();
+}
+
+// I want a class that I can access by index
+// has name
+// passphrase
+// the 3 buttons
+// when the save button is clicked in the generator page
+// the event is detected, and a new entry is added in the vault page
+// in the column
+
+class _ListEntryState extends State<ListEntry> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        // name of the passphrase entry
+        //Flexible(child: ListTile(title: Text(widget.index.toString()))),
+        Expanded(
+          child: ListTile(
+            title: Text(widget.name),
+            trailing: SizedBox(
+              width: 250,
+              child: TextField(
+                enabled: false,
+                readOnly: true,
+                decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: widget.passphrase),
+              ),
+            ),
+          ),
+        ),
+        // regenerate
+        const SPMguiEditButton(),
+        // copy
+        const SPMguiButtonCopyCliboard(),
+        //show/hide
+        SPMguitogglePassphraseVisibilityButton(
+          page: 1,
+          name: widget.name,
+        ),
       ],
     );
   }

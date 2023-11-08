@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'spmgui_navigationbar.dart';
 import 'spmgui_pages.dart';
-import 'spmgui_fabs.dart';
+import 'spmgui_buttons.dart';
 import 'spmgui_changenotifiers.dart';
 
 void main() {
@@ -15,6 +15,10 @@ void main() {
       // For the passphrase generator page
       ChangeNotifierProvider<SPMgeneratorHandler>(
         create: (context) => SPMgeneratorHandler(),
+      ),
+      // For the vault page
+      ChangeNotifierProvider<SPMvaultHandler>(
+        create: (context) => SPMvaultHandler(),
       ),
     ],
     child: const SPMgui(),
@@ -52,22 +56,14 @@ class _SPMguiScreen extends State<SPMgui> {
         body: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
                   0 => SPMguiGeneratorPage(),
-                  1 => Text('To be built'),
+                  1 => SPMguiVaultPage(),
                   _ => Text('whoops'),
                 }),
 
         bottomNavigationBar: const SPMguiNavigationBar(),
         floatingActionButton: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
-                  0 => SPMguiGeneratorPageFAB(
-                      randomizeSeparators:
-                          Provider.of<SPMgeneratorHandler>(context)
-                              .getRandomizeSeparators(),
-                      typoify: Provider.of<SPMgeneratorHandler>(context)
-                          .getTypoify(),
-                      length:
-                          Provider.of<SPMgeneratorHandler>(context).getLength(),
-                    ),
+                  0 => SPMguiGeneratorPageSaveFAB(),
                   1 => Text('To be built'),
                   _ => Text('whoops'),
                 }),
