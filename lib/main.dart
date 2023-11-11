@@ -5,6 +5,8 @@ import 'spmgui_pages.dart';
 import 'spmgui_buttons.dart';
 import 'spmgui_changenotifiers.dart';
 
+// FIXME: adopt a style for naming variables and functions!
+
 void main() {
   runApp(MultiProvider(
     providers: [

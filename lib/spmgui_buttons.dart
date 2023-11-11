@@ -4,20 +4,53 @@ import 'package:flutter/services.dart';
 import 'spmgui_changenotifiers.dart';
 import 'package:spm_dart/spm_dart.dart';
 
+// FIXME: try to turn most widgets into stateless ones
+
+// FIXME: try to use provider stuff more instead of just receiving stuff thru widget variables and the like
 class SPMguiButtonCopyCliboard extends StatefulWidget {
-  const SPMguiButtonCopyCliboard({super.key});
+  const SPMguiButtonCopyCliboard(
+      {super.key, required this.page, required this.name});
+  final int page;
+  final String name;
 
   @override
   State<SPMguiButtonCopyCliboard> createState() =>
       _SPMguiButtonCopyClipboardState();
 }
 
+// FIXME: getting the passphrase obscured and copying it, copies the obscuring characters....
 class _SPMguiButtonCopyClipboardState extends State<SPMguiButtonCopyCliboard> {
   void _onCopyToClipboardButtonPressed() {
     // TODO: display a toast saying "nothing to copy" when the passphrase is empty
-    Clipboard.setData(ClipboardData(
-        text: Provider.of<SPMgeneratorHandler>(context, listen: false)
-            .getPassphrase()));
+    String generatedPassphrase = '';
+    switch (widget.page) {
+      // generator page
+      case 0:
+        generatedPassphrase =
+            Provider.of<SPMgeneratorHandler>(context, listen: false)
+                .getPassphrase();
+        break;
+
+      case 1:
+        generatedPassphrase =
+            Provider.of<SPMvaultHandler>(context, listen: false)
+                .getPassphrase(widget.name);
+        break;
+      default:
+    }
+
+    // FIXME: replace the right hand by a placeholder variable
+    // shows snackbar notifying user of the accomplished action, removing any previous snackbar
+    if (generatedPassphrase == "Not yet generated") {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Nothing to copy to clipboard.")));
+    } else {
+      Clipboard.setData(ClipboardData(text: generatedPassphrase));
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Copied to clipboard.")));
+    }
   }
 
   @override
@@ -138,10 +171,23 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
     void _onFABpressed() {
       var name =
           Provider.of<SPMgeneratorHandler>(context, listen: false).getName();
-      var passphrase = Provider.of<SPMgeneratorHandler>(context, listen: false)
-          .getPassphrase();
-      Provider.of<SPMvaultHandler>(context, listen: false)
-          .addEntry(name, passphrase);
+      var generatedPassphrase =
+          Provider.of<SPMgeneratorHandler>(context, listen: false)
+              .getPassphrase();
+      // FIXME: substitute the right hand by a variable that's called "placeholder"
+      // notify the user of the accomplished action, removing any previous snackbar
+
+      if (generatedPassphrase == "Not yet generated") {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Nothing to save.")));
+      } else {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Saved.")));
+        Provider.of<SPMvaultHandler>(context, listen: false)
+            .addEntry(name, generatedPassphrase);
+      }
     }
 
     return FloatingActionButton(

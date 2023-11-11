@@ -135,7 +135,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
             // TODO: Improve the look of these buttons
             Expanded(
                 child: ListTile(
-              trailing: SPMguiButtonCopyCliboard(),
+              trailing: SPMguiButtonCopyCliboard(page: 0, name: _name),
             )),
             Flexible(
               fit: FlexFit.loose,
@@ -247,7 +247,10 @@ class _ListEntryState extends State<ListEntry> {
         // regenerate
         const SPMguiEditButton(),
         // copy
-        const SPMguiButtonCopyCliboard(),
+        SPMguiButtonCopyCliboard(
+          page: 1,
+          name: widget.name,
+        ),
         //show/hide
         SPMguitogglePassphraseVisibilityButton(
           page: 1,
