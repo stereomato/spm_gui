@@ -58,12 +58,19 @@ class SPMgeneratorHandler with ChangeNotifier {
     notifyListeners();
   }
 
-  String getPassphrase() {
-    switch (_hidePassphrase) {
-      case true:
-        return _passphrase.replaceAll(RegExp(r'[^]'), '*');
-      case false:
-        return _passphrase;
+// FIXME: update to be in line with getVaultPassphrase()
+// FIXME: perhaps a bit ugly, reconsider?
+// if it's for the copy button it's always returned unobscured, otherwise its visibility can be toggled
+  String getGeneratorPassphrase(bool forCopyButton) {
+    if (forCopyButton) {
+      return _passphrase;
+    } else {
+      switch (_hidePassphrase) {
+        case true:
+          return _passphrase.replaceAll(RegExp(r'[^]'), '*');
+        case false:
+          return _passphrase;
+      }
     }
   }
 
@@ -72,7 +79,7 @@ class SPMgeneratorHandler with ChangeNotifier {
     notifyListeners();
   }
 
-  bool getHidePassphrase() {
+  bool getPassphraseVisibility() {
     return _hidePassphrase;
   }
 
@@ -90,6 +97,10 @@ class SPMvaultHandler with ChangeNotifier {
   // values to add, remove or search for an entry
   String _name = '';
   String _passphrase = '';
+
+  // for the deletion mode
+  bool deletionMode = false;
+  List<String> deletionList = [];
 
   // name: visibility: passphrase
   final Map<String, Map<bool, String>> _entries = {
@@ -133,16 +144,64 @@ class SPMvaultHandler with ChangeNotifier {
   }
 
   // getting passphrase
-  String getPassphrase(String name) {
+  // FIXME: need to rethink how to handle obscuring this one
+  // If it's for the copy button, always return the passphrase unobscured
+  // if it's for anything else (such as the text box displaying it), let it be returned either obscured or unobscured
+  String getVaultPassphrase(String name, bool forCopyButton) {
     var passphraseProperties = getEntries()[name] as Map<bool, String>;
     var visibility = passphraseProperties.keys.toList().first;
     var passphrase = passphraseProperties[visibility] as String;
 
-    switch (visibility) {
-      case true:
-        return passphrase;
-      case false:
-        return passphrase.replaceAll(RegExp(r'[^]'), '*');
+    if (forCopyButton) {
+      return passphrase;
+    } else {
+      switch (visibility) {
+        case true:
+          return passphrase;
+        case false:
+          return passphrase.replaceAll(RegExp(r'[^]'), '*');
+      }
     }
+  }
+
+  void toggleDeletionMode() {
+    deletionMode = !deletionMode;
+    notifyListeners();
+  }
+
+  bool getDeletionMode() {
+    return deletionMode;
+  }
+
+  void addEntriesToDeletionList(String name) {
+    deletionList.add(name);
+  }
+
+  // If an entry's name is in the list, remove it, otherwise add it.
+  // Because of the toggling
+  void modifyDeletionList(String name) {
+    if (deletionList.contains(name)) {
+      deletionList.remove(name);
+    } else {
+      deletionList.add(name);
+    }
+  }
+
+  List<String> getDeletionList() {
+    return deletionList;
+  }
+
+  bool isDeletionListEmpty() {
+    return deletionList.isEmpty;
+  }
+
+// Delete each entry in the deletionList from the _entries hashmap
+  void deleteEntries() {
+    for (var entryToDelete in deletionList) {
+      _entries.remove(entryToDelete);
+    }
+    // also, empty the deletionList
+    deletionList.clear;
+    notifyListeners();
   }
 }

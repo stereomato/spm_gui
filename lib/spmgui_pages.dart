@@ -122,7 +122,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
                   //labelText: context.read<SPMgeneratorHandler>()._passphrase),
                   // why doesnt this get updated immediately?
                   labelText: Provider.of<SPMgeneratorHandler>(context)
-                      .getPassphrase()),
+                      .getGeneratorPassphrase(false)),
             ),
           ),
         ),
@@ -131,7 +131,7 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Spacer(),
+            const Spacer(),
             // TODO: Improve the look of these buttons
             Expanded(
                 child: ListTile(
@@ -177,8 +177,8 @@ class _SPMguiVaultPageState extends State<SPMguiVaultPage> {
   ListEntry _actualBuildEntries(
       Map<String, Map<bool, String>> inputEntries, int index) {
     String finalName = inputEntries.keys.toList()[index];
-    String finalPassphrase =
-        Provider.of<SPMvaultHandler>(context).getPassphrase(finalName);
+    String finalPassphrase = Provider.of<SPMvaultHandler>(context)
+        .getVaultPassphrase(finalName, false);
     //print('length: ${inputEntries.length}');
     return ListEntry(name: finalName, passphrase: finalPassphrase);
   }
@@ -204,6 +204,8 @@ class _SPMguiVaultPageState extends State<SPMguiVaultPage> {
 // Every passphrase entry should have an index to know which thing we are acting
 // upon
 
+// These are the entries of the vault page
+// FIXME: rename these classes to something more appropiate
 class ListEntry extends StatefulWidget {
   const ListEntry({super.key, required this.name, required this.passphrase});
   final String name;
@@ -223,12 +225,39 @@ class ListEntry extends StatefulWidget {
 // in the column
 
 class _ListEntryState extends State<ListEntry> {
+  bool deletionCheckBox = false;
+  // when toggled, add the name
+  void onCheckBoxToggled(bool toggler) {
+    deletionCheckBox = toggler;
+    // just add or remove if in the list
+    Provider.of<SPMvaultHandler>(context, listen: false)
+        .modifyDeletionList(widget.name);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
         // name of the passphrase entry
         //Flexible(child: ListTile(title: Text(widget.index.toString()))),
+        // FIXME: add a check box here when deletion mode is on
+        // the checkbox could either edit a (new) property of the passphrase hashmap [THIS IS ANNOYING TO DO] or
+        // it can save the name of the entries to remove [THIS IS GOOD]
+        Consumer<SPMvaultHandler>(
+          builder: (context, value, child) {
+            if (value.getDeletionMode()) {
+              return Checkbox(
+                  value: deletionCheckBox,
+                  onChanged: (toggler) {
+                    setState(() {
+                      onCheckBoxToggled(toggler as bool);
+                    });
+                  });
+            }
+            // FIXME: display something more appropiate here...
+            return const Text("placeholder");
+          },
+        ),
         Expanded(
           child: ListTile(
             title: Text(widget.name),
@@ -244,6 +273,7 @@ class _ListEntryState extends State<ListEntry> {
             ),
           ),
         ),
+        // FIXME: hide these buttons when deletion mode is on
         // regenerate
         const SPMguiEditButton(),
         // copy

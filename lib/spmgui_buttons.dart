@@ -7,56 +7,48 @@ import 'package:spm_dart/spm_dart.dart';
 // FIXME: try to turn most widgets into stateless ones
 
 // FIXME: try to use provider stuff more instead of just receiving stuff thru widget variables and the like
-class SPMguiButtonCopyCliboard extends StatefulWidget {
+
+class SPMguiButtonCopyCliboard extends StatelessWidget {
   const SPMguiButtonCopyCliboard(
       {super.key, required this.page, required this.name});
   final int page;
   final String name;
 
   @override
-  State<SPMguiButtonCopyCliboard> createState() =>
-      _SPMguiButtonCopyClipboardState();
-}
-
-// FIXME: getting the passphrase obscured and copying it, copies the obscuring characters....
-class _SPMguiButtonCopyClipboardState extends State<SPMguiButtonCopyCliboard> {
-  void _onCopyToClipboardButtonPressed() {
-    // TODO: display a toast saying "nothing to copy" when the passphrase is empty
-    String generatedPassphrase = '';
-    switch (widget.page) {
-      // generator page
-      case 0:
-        generatedPassphrase =
-            Provider.of<SPMgeneratorHandler>(context, listen: false)
-                .getPassphrase();
-        break;
-
-      case 1:
-        generatedPassphrase =
-            Provider.of<SPMvaultHandler>(context, listen: false)
-                .getPassphrase(widget.name);
-        break;
-      default:
-    }
-
-    // FIXME: replace the right hand by a placeholder variable
-    // shows snackbar notifying user of the accomplished action, removing any previous snackbar
-    if (generatedPassphrase == "Not yet generated") {
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Nothing to copy to clipboard.")));
-    } else {
-      Clipboard.setData(ClipboardData(text: generatedPassphrase));
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Copied to clipboard.")));
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    void onCopyToClipboardButtonPressed() {
+      String generatedPassphrase = '';
+      switch (page) {
+        // generator page
+        case 0:
+          generatedPassphrase =
+              Provider.of<SPMgeneratorHandler>(context, listen: false)
+                  .getGeneratorPassphrase(true);
+          break;
+
+        case 1:
+          generatedPassphrase =
+              Provider.of<SPMvaultHandler>(context, listen: false)
+                  .getVaultPassphrase(name, true);
+          break;
+      }
+
+      // FIXME: replace the right hand by a placeholder variable
+      // shows snackbar notifying user of the accomplished action, removing any previous snackbar
+      if (generatedPassphrase == "Not yet generated") {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Nothing to copy to clipboard.")));
+      } else {
+        Clipboard.setData(ClipboardData(text: generatedPassphrase));
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Copied to clipboard.")));
+      }
+    }
+
     return FilledButton.tonal(
-      onPressed: _onCopyToClipboardButtonPressed,
+      onPressed: onCopyToClipboardButtonPressed,
       child: const Icon(Icons.content_copy),
     );
   }
@@ -75,16 +67,16 @@ class SPMguitogglePassphraseVisibilityButton extends StatefulWidget {
 
 class _SPMguitogglePassphraseVisibilityButtonState
     extends State<SPMguitogglePassphraseVisibilityButton> {
-  Icon _forTheHideButton = Icon(Icons.visibility);
+  Icon _forTheHideButton = const Icon(Icons.visibility);
   //bool _obscurePassphrase = false;
   void _onHidePassphraseButtonPressed() {
     setState(() {
       switch (_forTheHideButton) {
         case Icon(icon: Icons.visibility):
-          _forTheHideButton = Icon(Icons.visibility_off);
+          _forTheHideButton = const Icon(Icons.visibility_off);
           break;
         case Icon(icon: Icons.visibility_off):
-          _forTheHideButton = Icon(Icons.visibility);
+          _forTheHideButton = const Icon(Icons.visibility);
           break;
         default:
       }
@@ -120,11 +112,11 @@ class SPMguiEditButton extends StatefulWidget {
 class _SPMguiEditButtonState extends State<SPMguiEditButton> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp();
+    return const MaterialApp();
   }
 }
 
-class SPMguiGeneratePassphraseButton extends StatefulWidget {
+class SPMguiGeneratePassphraseButton extends StatelessWidget {
   const SPMguiGeneratePassphraseButton(
       {super.key,
       required this.randomizeSeparators,
@@ -135,28 +127,20 @@ class SPMguiGeneratePassphraseButton extends StatefulWidget {
   final int length;
 
   @override
-  State<SPMguiGeneratePassphraseButton> createState() =>
-      _SPMguiGeneratePassphraseButtonState();
-}
-
-class _SPMguiGeneratePassphraseButtonState
-    extends State<SPMguiGeneratePassphraseButton> {
-  String _passphrase = 'Not yet generated [FAB edition]';
-  void _generatePassphraseWrapped() async {
-    // TODO: add a button to copy this to the clipboard
-    _passphrase = await constructPassphrase(widget.length,
-        widget.randomizeSeparators, widget.typoify, "dictionary.txt");
-
-    if (context.mounted) {
-      Provider.of<SPMgeneratorHandler>(context, listen: false)
-          .setPassphrase(_passphrase);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    String passphrase = 'Not yet generated [FAB edition]';
+    void generatePassphraseWrapped() async {
+      passphrase = await constructPassphrase(
+          length, randomizeSeparators, typoify, "dictionary.txt");
+
+      if (context.mounted) {
+        Provider.of<SPMgeneratorHandler>(context, listen: false)
+            .setPassphrase(passphrase);
+      }
+    }
+
     return FilledButton.tonal(
-      onPressed: _generatePassphraseWrapped,
+      onPressed: generatePassphraseWrapped,
       //tooltip: 'Generate a passphrase with the defined settings above',
       child: const Icon(Icons.autorenew),
     );
@@ -168,12 +152,12 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void _onFABpressed() {
+    void onFABpressed() {
       var name =
           Provider.of<SPMgeneratorHandler>(context, listen: false).getName();
       var generatedPassphrase =
           Provider.of<SPMgeneratorHandler>(context, listen: false)
-              .getPassphrase();
+              .getGeneratorPassphrase(true);
       // FIXME: substitute the right hand by a variable that's called "placeholder"
       // notify the user of the accomplished action, removing any previous snackbar
 
@@ -191,7 +175,7 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
     }
 
     return FloatingActionButton(
-      onPressed: _onFABpressed,
+      onPressed: onFABpressed,
       child: const Icon(Icons.save),
     );
   }
@@ -200,4 +184,68 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
 // I need to have a class that houses the values for the vault page
 // array, etc
 
+// This is a WIP. Idk what other kind of FAB to put on the vault page
 
+// When pressed, this would:
+// - change the app bar to denote that we are now in deletion mode
+// - display checkboxes on the entries of the vault [prototyped]
+// - perhaps, do a rotating animation
+// - change icon, from trashcan to trashcan filled
+// - if pressed with items selected, delete
+// - if pressed without items selected, snackbar pops up, saying "Nothing deleted."
+
+class SPMguiVaultPageDeleteFAB extends StatefulWidget {
+  const SPMguiVaultPageDeleteFAB({super.key});
+  @override
+  State<SPMguiVaultPageDeleteFAB> createState() =>
+      _SPMguiVaultPageDeleteFABstate();
+}
+
+class _SPMguiVaultPageDeleteFABstate extends State<SPMguiVaultPageDeleteFAB> {
+  // when the thing is pressed, I want the icon to change to d_f
+  // when its pressed again, I want it to change to d
+  Icon fabIcon = const Icon(Icons.delete);
+  void onFABpressed() {
+    // if in deletion mode...
+    if (Provider.of<SPMvaultHandler>(context, listen: false)
+        .getDeletionMode()) {
+      // see if the list is empty or not
+      switch (Provider.of<SPMvaultHandler>(context, listen: false)
+          .isDeletionListEmpty()) {
+        // the list is empty, might either do nothing (display snackbar) or
+        case true:
+          //FIXME: create a function to show snackbars, saving myself having
+          // to write these two lines.
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Nothing to delete.")));
+          break;
+        // the list is not empty, so, delete
+        case false:
+          Provider.of<SPMvaultHandler>(context, listen: false).deleteEntries();
+          break;
+      }
+    }
+
+    // send signal that we have been tapped and are either entering or exiting
+    // deletion mode
+    Provider.of<SPMvaultHandler>(context, listen: false).toggleDeletionMode();
+    // change icon
+    setState(() {
+      switch (fabIcon) {
+        case Icon(icon: Icons.delete):
+          fabIcon = const Icon(Icons.delete_forever);
+          break;
+
+        case Icon(icon: Icons.delete_forever):
+          fabIcon = const Icon(Icons.delete);
+          break;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(onPressed: onFABpressed, child: fabIcon);
+  }
+}

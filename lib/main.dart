@@ -57,17 +57,17 @@ class _SPMguiScreen extends State<SPMgui> {
 
         body: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
-                  0 => SPMguiGeneratorPage(),
-                  1 => SPMguiVaultPage(),
-                  _ => Text('whoops'),
+                  0 => const SPMguiGeneratorPage(),
+                  1 => const SPMguiVaultPage(),
+                  _ => const Text('whoops'),
                 }),
 
         bottomNavigationBar: const SPMguiNavigationBar(),
         floatingActionButton: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
-                  0 => SPMguiGeneratorPageSaveFAB(),
-                  1 => Text('To be built'),
-                  _ => Text('whoops'),
+                  0 => const SPMguiGeneratorPageSaveFAB(),
+                  1 => const SPMguiVaultPageDeleteFAB(),
+                  _ => const Text('whoops'),
                 }),
       ),
     );
