@@ -243,6 +243,11 @@ class _ListEntryState extends State<ListEntry> {
         // FIXME: add a check box here when deletion mode is on
         // the checkbox could either edit a (new) property of the passphrase hashmap [THIS IS ANNOYING TO DO] or
         // it can save the name of the entries to remove [THIS IS GOOD]
+        // I could use this padding thing for a draggable button thing
+        Padding(
+          padding: EdgeInsets.all(10),
+          child: Icon(Icons.abc),
+        ),
         Consumer<SPMvaultHandler>(
           builder: (context, value, child) {
             if (value.getDeletionMode()) {
@@ -255,7 +260,8 @@ class _ListEntryState extends State<ListEntry> {
                   });
             }
             // FIXME: display something more appropiate here...
-            return const Text("placeholder");
+            // Literally nothing
+            return const SizedBox.shrink();
           },
         ),
         Expanded(
@@ -282,9 +288,13 @@ class _ListEntryState extends State<ListEntry> {
           name: widget.name,
         ),
         //show/hide
-        SPMguitogglePassphraseVisibilityButton(
-          page: 1,
-          name: widget.name,
+
+        Padding(
+          padding: EdgeInsets.all(10),
+          child: SPMguitogglePassphraseVisibilityButton(
+            page: 1,
+            name: widget.name,
+          ),
         ),
       ],
     );

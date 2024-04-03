@@ -45,3 +45,6 @@ app.*.map.json
 
 # Nix
 .direnv/
+
+# FVM Version Cache
+.fvm/
