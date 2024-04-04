@@ -133,27 +133,27 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
           children: <Widget>[
             const Spacer(),
             // TODO: Improve the look of these buttons
-            Expanded(
-                child: ListTile(
-              trailing: SPMguiButtonCopyCliboard(page: 0, name: _name),
-            )),
-            Flexible(
-              fit: FlexFit.loose,
+            Padding(
+              padding: EdgeInsets.only(left: 0, right: 17.5),
+              child: SPMguiButtonCopyCliboard(page: 0, name: _name),
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 0, right: 17.5),
               child: SPMguiGeneratePassphraseButton(
                 length: _length,
                 randomizeSeparators: _randomizeSeparators,
                 typoify: _typoify,
               ),
             ),
-            const Padding(padding: EdgeInsets.only(right: 20)),
-            const Flexible(
-              fit: FlexFit.loose,
+            //const Padding(padding: EdgeInsets.only(right: 20)),
+            Padding(
+              padding: EdgeInsets.only(left: 0, right: 23.5),
               child: SPMguitogglePassphraseVisibilityButton(
                 page: 0,
                 name: '',
               ),
             ),
-            const Padding(padding: EdgeInsets.only(right: 30)),
+            // const Padding(padding: EdgeInsets.only(right: 30)),
           ],
         )
       ],
@@ -236,67 +236,70 @@ class _ListEntryState extends State<ListEntry> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        // name of the passphrase entry
-        //Flexible(child: ListTile(title: Text(widget.index.toString()))),
-        // FIXME: add a check box here when deletion mode is on
-        // the checkbox could either edit a (new) property of the passphrase hashmap [THIS IS ANNOYING TO DO] or
-        // it can save the name of the entries to remove [THIS IS GOOD]
-        // I could use this padding thing for a draggable button thing
-        Padding(
-          padding: EdgeInsets.all(10),
-          child: Icon(Icons.abc),
-        ),
-        Consumer<SPMvaultHandler>(
-          builder: (context, value, child) {
-            if (value.getDeletionMode()) {
-              return Checkbox(
-                  value: deletionCheckBox,
-                  onChanged: (toggler) {
-                    setState(() {
-                      onCheckBoxToggled(toggler as bool);
+    return Padding(
+      padding: EdgeInsets.all(10),
+      child: Row(
+        children: <Widget>[
+          // name of the passphrase entry
+          //Flexible(child: ListTile(title: Text(widget.index.toString()))),
+          // FIXME: add a check box here when deletion mode is on
+          // the checkbox could either edit a (new) property of the passphrase hashmap [THIS IS ANNOYING TO DO] or
+          // it can save the name of the entries to remove [THIS IS GOOD]
+          // I could use this padding thing for a draggable button thing
+          /*Padding(
+            padding: EdgeInsets.all(10),
+            child: Icon(Icons.abc),
+          ),*/
+          Consumer<SPMvaultHandler>(
+            builder: (context, value, child) {
+              if (value.getDeletionMode()) {
+                return Checkbox(
+                    value: deletionCheckBox,
+                    onChanged: (toggler) {
+                      setState(() {
+                        onCheckBoxToggled(toggler as bool);
+                      });
                     });
-                  });
-            }
-            // FIXME: display something more appropiate here...
-            // Literally nothing
-            return const SizedBox.shrink();
-          },
-        ),
-        Expanded(
-          child: ListTile(
-            title: Text(widget.name),
-            trailing: SizedBox(
-              width: 250,
-              child: TextField(
-                enabled: false,
-                readOnly: true,
-                decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: widget.passphrase),
+              }
+              // FIXME: display something more appropiate here...
+              // Literally nothing
+              return const SizedBox.shrink();
+            },
+          ),
+          Expanded(
+            child: ListTile(
+              title: Text(widget.name),
+              trailing: SizedBox(
+                width: 250,
+                child: TextField(
+                  enabled: false,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: widget.passphrase),
+                ),
               ),
             ),
           ),
-        ),
-        // FIXME: hide these buttons when deletion mode is on
-        // regenerate
-        const SPMguiEditButton(),
-        // copy
-        SPMguiButtonCopyCliboard(
-          page: 1,
-          name: widget.name,
-        ),
-        //show/hide
-
-        Padding(
-          padding: EdgeInsets.all(10),
-          child: SPMguitogglePassphraseVisibilityButton(
+          // FIXME: hide these buttons when deletion mode is on
+          // regenerate
+          const SPMguiEditButton(),
+          // copy
+          SPMguiButtonCopyCliboard(
             page: 1,
             name: widget.name,
           ),
-        ),
-      ],
+          //show/hide
+
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: SPMguitogglePassphraseVisibilityButton(
+              page: 1,
+              name: widget.name,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -147,8 +147,11 @@ class SPMguiGeneratePassphraseButton extends StatelessWidget {
   }
 }
 
+//TODO: Turn this stateful to make it change icon
 class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
-  const SPMguiGeneratorPageSaveFAB({super.key});
+  SPMguiGeneratorPageSaveFAB({super.key});
+
+  var fabIcon = Icons.save;
 
   @override
   Widget build(BuildContext context) {
@@ -163,9 +166,11 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
 
       if (generatedPassphrase == "Not yet generated") {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        fabIcon = Icons.close;
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("Nothing to save.")));
       } else {
+        fabIcon = Icons.done;
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("Saved.")));
@@ -176,7 +181,7 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
 
     return FloatingActionButton(
       onPressed: onFABpressed,
-      child: const Icon(Icons.save),
+      child: Icon(fabIcon),
     );
   }
 }
