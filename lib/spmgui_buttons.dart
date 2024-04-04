@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'spmgui_changenotifiers.dart';
-import 'package:spm_dart/spm_dart.dart';
+import 'package:spm_dart/spcleam_dart.dart';
 
 // FIXME: try to turn most widgets into stateless ones
 
