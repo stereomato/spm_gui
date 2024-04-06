@@ -131,7 +131,11 @@ class SPMguiGeneratePassphraseButton extends StatelessWidget {
     String passphrase = 'Not yet generated [FAB edition]';
     void generatePassphraseWrapped() async {
       passphrase = await constructPassphrase(
-          length, randomizeSeparators, typoify, "dictionary.txt");
+          // FIXME: why the fuck did I do this
+          length,
+          randomizeSeparators,
+          typoify,
+          rootBundle.loadString("assets/english-dictionary.txt"));
 
       if (context.mounted) {
         Provider.of<SPMgeneratorHandler>(context, listen: false)
