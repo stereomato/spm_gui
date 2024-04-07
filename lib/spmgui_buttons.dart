@@ -130,12 +130,8 @@ class SPMguiGeneratePassphraseButton extends StatelessWidget {
   Widget build(BuildContext context) {
     String passphrase = 'Not yet generated [FAB edition]';
     void generatePassphraseWrapped() async {
-      passphrase = await constructPassphrase(
-          // FIXME: why the fuck did I do this
-          length,
-          randomizeSeparators,
-          typoify,
-          rootBundle.loadString("assets/english-dictionary.txt"));
+      passphrase = await constructPassphrase(length, randomizeSeparators,
+          typoify, rootBundle.loadString("assets/english-dictionary.txt"));
 
       if (context.mounted) {
         Provider.of<SPMgeneratorHandler>(context, listen: false)
@@ -152,9 +148,16 @@ class SPMguiGeneratePassphraseButton extends StatelessWidget {
 }
 
 //TODO: Turn this stateful to make it change icon
-class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
+class SPMguiGeneratorPageSaveFAB extends StatefulWidget {
   SPMguiGeneratorPageSaveFAB({super.key});
 
+  @override
+  State<SPMguiGeneratorPageSaveFAB> createState() =>
+      _SPMguiGeneratorPageSaveFABstate();
+}
+
+class _SPMguiGeneratorPageSaveFABstate
+    extends State<SPMguiGeneratorPageSaveFAB> {
   var fabIcon = Icons.save;
 
   @override
@@ -170,14 +173,62 @@ class SPMguiGeneratorPageSaveFAB extends StatelessWidget {
 
       if (generatedPassphrase == "Not yet generated") {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        fabIcon = Icons.close;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Nothing to save.")));
+        switch (fabIcon) {
+          case Icons.save:
+            setState(() {
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Nothing to save.")));
+              fabIcon = Icons.close;
+
+              // after snackbar timeout dismiss, set icon back to save
+              // according to the description of the snackbar duration
+              // it should be 4 seconds, but instead seems to be 4.5?
+              // maybe the result of how I handle this
+              Future.delayed(const Duration(milliseconds: 4500), () {
+                setState(() {
+                  fabIcon = Icons.save;
+                });
+              });
+            });
+            break;
+          case Icons.close:
+            setState(() {
+              fabIcon = Icons.save;
+            });
+            break;
+        }
       } else {
-        fabIcon = Icons.done;
+        // remove snackbar if present
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Saved.")));
+        switch (fabIcon) {
+          case Icons.save:
+            // set icon to a check
+            setState(() {
+              fabIcon = Icons.done;
+            });
+            // after snackbar timeout dismiss, set icon back to save
+            // according to the description of the snackbar duration
+            // it should be 4 seconds, but instead seems to be 4.5?
+            // maybe the result of how I handle this
+            Future.delayed(const Duration(milliseconds: 4500), () {
+              setState(() {
+                fabIcon = Icons.save;
+              });
+            });
+            // show snackbar
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text("Saved.")));
+            break;
+          case Icons.done:
+            // dismiss snackbar
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+            // set icon back to save
+            setState(() {
+              fabIcon = Icons.save;
+            });
+            break;
+        }
+
         Provider.of<SPMvaultHandler>(context, listen: false)
             .addEntry(name, generatedPassphrase);
       }
