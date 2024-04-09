@@ -16,6 +16,8 @@ class SPMgeneratorHandler with ChangeNotifier {
   String _passphrase = 'Not yet generated';
   bool _hidePassphrase = false;
   String _name = "Not yet named";
+  bool passphraseGenerated = false;
+  bool passphraseSaved = false;
 
   void reset() {
     _typoify = false;
@@ -24,6 +26,14 @@ class SPMgeneratorHandler with ChangeNotifier {
     _passphrase = 'Not yet generated';
     _hidePassphrase = false;
     _name = "Not yet named";
+    passphraseSaved = false;
+    passphraseGenerated = false;
+    notifyListeners();
+  }
+
+  void savedPassphrase() {
+    passphraseSaved = true;
+    notifyListeners();
   }
 
   void toggleTypoify(bool value) {
@@ -55,6 +65,7 @@ class SPMgeneratorHandler with ChangeNotifier {
 
   void setPassphrase(String value) {
     _passphrase = value;
+    passphraseGenerated = true;
     notifyListeners();
   }
 

@@ -8,6 +8,9 @@ class SPMguiNavigationBar extends StatefulWidget {
   State<SPMguiNavigationBar> createState() => _SPMguiNavigationBarState();
 }
 
+//FIXME: need to make state trickle down... I'm not handling it right, I think
+//FIXME: I need to make it so if something from the global state changes,
+//FIXME: widgets change as needed
 class _SPMguiNavigationBarState extends State<SPMguiNavigationBar> {
   int currentPageIndex = 0;
   @override

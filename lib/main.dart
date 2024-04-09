@@ -65,7 +65,12 @@ class _SPMguiScreen extends State<SPMgui> {
         bottomNavigationBar: const SPMguiNavigationBar(),
         floatingActionButton: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
-                  0 => SPMguiGeneratorPageSaveFAB(),
+                  0 => Consumer<SPMgeneratorHandler>(
+                      builder: ((context, value, child) =>
+                          switch (value.passphraseGenerated) {
+                            true => const SPMguiGeneratorPageSaveFAB(),
+                            false => const SizedBox.shrink(),
+                          })),
                   1 => const SPMguiVaultPageDeleteFAB(),
                   _ => const Text('whoops'),
                 }),

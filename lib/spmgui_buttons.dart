@@ -147,9 +147,8 @@ class SPMguiGeneratePassphraseButton extends StatelessWidget {
   }
 }
 
-//TODO: Turn this stateful to make it change icon
 class SPMguiGeneratorPageSaveFAB extends StatefulWidget {
-  SPMguiGeneratorPageSaveFAB({super.key});
+  const SPMguiGeneratorPageSaveFAB({super.key});
 
   @override
   State<SPMguiGeneratorPageSaveFAB> createState() =>
@@ -171,33 +170,7 @@ class _SPMguiGeneratorPageSaveFABstate
       // FIXME: substitute the right hand by a variable that's called "placeholder"
       // notify the user of the accomplished action, removing any previous snackbar
 
-      if (generatedPassphrase == "Not yet generated") {
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        switch (fabIcon) {
-          case Icons.save:
-            setState(() {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Nothing to save.")));
-              fabIcon = Icons.close;
-
-              // after snackbar timeout dismiss, set icon back to save
-              // according to the description of the snackbar duration
-              // it should be 4 seconds, but instead seems to be 4.5?
-              // maybe the result of how I handle this
-              Future.delayed(const Duration(milliseconds: 4500), () {
-                setState(() {
-                  fabIcon = Icons.save;
-                });
-              });
-            });
-            break;
-          case Icons.close:
-            setState(() {
-              fabIcon = Icons.save;
-            });
-            break;
-        }
-      } else {
+      if (generatedPassphrase != "Not yet generated") {
         // remove snackbar if present
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         switch (fabIcon) {
@@ -229,8 +202,16 @@ class _SPMguiGeneratorPageSaveFABstate
             break;
         }
 
+        // add passphrase entry
         Provider.of<SPMvaultHandler>(context, listen: false)
             .addEntry(name, generatedPassphrase);
+        // set it as saved
+        Provider.of<SPMgeneratorHandler>(context, listen: false)
+            .savedPassphrase();
+
+        // and switch to vault page
+        // switch page to vault page
+        Provider.of<SPMpageHandler>(context, listen: false).switchPage(1);
       }
     }
 
