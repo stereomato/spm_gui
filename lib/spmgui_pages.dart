@@ -70,9 +70,9 @@ class _SPMguiGeneratorPageState extends State<SPMguiGeneratorPage> {
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                 ),
-                onSubmitted: (value) => _onLengthChanged(int.parse(value)),
+                // update value when user submits it
+                onSubmitted: (value) => _onNameChanged(value),
                 // update value as soon as user writes
-                // i think it's better this way
                 onChanged: (value) => _onNameChanged(value)),
           ),
         ),
@@ -187,7 +187,7 @@ class _SPMguiVaultPageState extends State<SPMguiVaultPage> {
     List<Widget> rowList = [];
     Map<String, Map<bool, String>> inputEntries =
         Provider.of<SPMvaultHandler>(context).getEntries();
-    for (var index = 1; index < inputEntries.length; index += 1) {
+    for (var index = 0; index < inputEntries.length; index += 1) {
       rowList.add(_actualBuildEntries(inputEntries, index));
     }
     return rowList;

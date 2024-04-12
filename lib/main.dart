@@ -53,8 +53,7 @@ class _SPMguiScreen extends State<SPMgui> {
           automaticallyImplyLeading: false,
           title: const Text('Simple Passphrase Manager'),
         ),
-        // Here we switch between the page setup
-
+        // Here we switch between the pages
         body: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
                   0 => const SPMguiGeneratorPage(),
@@ -63,8 +62,12 @@ class _SPMguiScreen extends State<SPMgui> {
                 }),
 
         bottomNavigationBar: const SPMguiNavigationBar(),
+        // FAB handling
+        // (this) first Consumer is for determining what FAB the app should show
         floatingActionButton: Consumer<SPMpageHandler>(
             builder: (context, value, child) => switch (value.currentPage) {
+                  // (this) second Consumer is for determining whether to show
+                  // the save FAB (unsaved changes indicator, basically)
                   0 => Consumer<SPMgeneratorHandler>(
                       builder: ((context, value, child) =>
                           switch (value.passphraseGenerated) {

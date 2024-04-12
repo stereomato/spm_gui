@@ -247,42 +247,37 @@ class _SPMguiVaultPageDeleteFABstate extends State<SPMguiVaultPageDeleteFAB> {
   // when its pressed again, I want it to change to d
   Icon fabIcon = const Icon(Icons.delete);
   void onFABpressed() {
-    // if in deletion mode...
+    // first, tell user if the list is empty
     if (Provider.of<SPMvaultHandler>(context, listen: false)
-        .getDeletionMode()) {
-      // see if the list is empty or not
-      switch (Provider.of<SPMvaultHandler>(context, listen: false)
-          .isDeletionListEmpty()) {
-        // the list is empty, might either do nothing (display snackbar) or
-        case true:
-          //FIXME: create a function to show snackbars, saving myself having
-          // to write these two lines.
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Nothing to delete.")));
-          break;
-        // the list is not empty, so, delete
-        case false:
-          Provider.of<SPMvaultHandler>(context, listen: false).deleteEntries();
-          break;
+        .areEntriesEmpty()) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Nothing to delete.")));
+    } else {
+      // otherwise, delete
+      if (Provider.of<SPMvaultHandler>(context, listen: false)
+          .getDeletionMode()) {
+        Provider.of<SPMvaultHandler>(context, listen: false).deleteEntries();
       }
+
+      // if in deletion mode...
+
+      // send signal that we have been tapped and are either entering or exiting
+      // deletion mode
+      Provider.of<SPMvaultHandler>(context, listen: false).toggleDeletionMode();
+      // change icon
+      setState(() {
+        switch (fabIcon) {
+          case Icon(icon: Icons.delete):
+            fabIcon = const Icon(Icons.delete_forever);
+            break;
+
+          case Icon(icon: Icons.delete_forever):
+            fabIcon = const Icon(Icons.delete);
+            break;
+        }
+      });
     }
-
-    // send signal that we have been tapped and are either entering or exiting
-    // deletion mode
-    Provider.of<SPMvaultHandler>(context, listen: false).toggleDeletionMode();
-    // change icon
-    setState(() {
-      switch (fabIcon) {
-        case Icon(icon: Icons.delete):
-          fabIcon = const Icon(Icons.delete_forever);
-          break;
-
-        case Icon(icon: Icons.delete_forever):
-          fabIcon = const Icon(Icons.delete);
-          break;
-      }
-    });
   }
 
   @override

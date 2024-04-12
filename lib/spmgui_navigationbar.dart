@@ -12,30 +12,32 @@ class SPMguiNavigationBar extends StatefulWidget {
 //FIXME: I need to make it so if something from the global state changes,
 //FIXME: widgets change as needed
 class _SPMguiNavigationBarState extends State<SPMguiNavigationBar> {
-  int currentPageIndex = 0;
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(
-      // update index as user changes it
-      onDestinationSelected: (int index) {
-        setState(() {
-          currentPageIndex = index;
-          Provider.of<SPMpageHandler>(context, listen: false)
-              .switchPage(currentPageIndex);
-          Provider.of<SPMgeneratorHandler>(context, listen: false).reset();
-        });
-      },
-      selectedIndex: currentPageIndex,
-      destinations: const <Widget>[
-        NavigationDestination(
-          icon: Icon(Icons.settings),
-          label: 'Generate',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.inventory_2),
-          label: 'Vault',
-        ),
-      ],
-    );
+    return Consumer<SPMpageHandler>(
+      builder: (context, page, child) => NavigationBar(
+        // update index as user changes it
+        onDestinationSelected: (int index) {
+          setState(() {
+            Provider.of<SPMpageHandler>(context, listen: false)
+                .switchPage(index);
+            Provider.of<SPMgeneratorHandler>(context, listen: false).reset();
+          });
+        },
+        selectedIndex: page.currentPage,
+        destinations: const <Widget>[
+          NavigationDestination(
+            icon: Icon(Icons.settings),
+            label: 'Generate',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.inventory_2),
+            label: 'Vault',
+          ),
+        ],
+      ),
+    )
+        /**/
+        ;
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SPMpageHandler with ChangeNotifier {
+class SPMpageHandler extends ChangeNotifier {
   int currentPage = 0;
 
   void switchPage(int value) {
@@ -9,7 +9,7 @@ class SPMpageHandler with ChangeNotifier {
   }
 }
 
-class SPMgeneratorHandler with ChangeNotifier {
+class SPMgeneratorHandler extends ChangeNotifier {
   bool _typoify = false;
   bool _randomizeSeparators = false;
   int _length = 1;
@@ -104,7 +104,7 @@ class SPMgeneratorHandler with ChangeNotifier {
   }
 }
 
-class SPMvaultHandler with ChangeNotifier {
+class SPMvaultHandler extends ChangeNotifier {
   // values to add, remove or search for an entry
   String _name = '';
   String _passphrase = '';
@@ -114,9 +114,7 @@ class SPMvaultHandler with ChangeNotifier {
   List<String> deletionList = [];
 
   // name: visibility: passphrase
-  final Map<String, Map<bool, String>> _entries = {
-    'name': {true: 'passphrase'}
-  };
+  final Map<String, Map<bool, String>> _entries = {};
 
   void setPassphrase(String value) {
     _passphrase = value;
@@ -202,8 +200,9 @@ class SPMvaultHandler with ChangeNotifier {
     return deletionList;
   }
 
-  bool isDeletionListEmpty() {
-    return deletionList.isEmpty;
+  // FIXME: this... doesn't work right
+  bool areEntriesEmpty() {
+    return _entries.isEmpty;
   }
 
 // Delete each entry in the deletionList from the _entries hashmap
