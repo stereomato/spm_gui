@@ -200,7 +200,6 @@ class SPMvaultHandler extends ChangeNotifier {
     return deletionList;
   }
 
-  // FIXME: this... doesn't work right
   bool areEntriesEmpty() {
     return _entries.isEmpty;
   }

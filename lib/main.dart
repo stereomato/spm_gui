@@ -74,7 +74,12 @@ class _SPMguiScreen extends State<SPMgui> {
                             true => const SPMguiGeneratorPageSaveFAB(),
                             false => const SizedBox.shrink(),
                           })),
-                  1 => const SPMguiVaultPageDeleteFAB(),
+                  1 => Consumer<SPMvaultHandler>(
+                      builder: ((context, value, child) =>
+                          switch (value.areEntriesEmpty()) {
+                            true => const SizedBox.shrink(),
+                            false => const SPMguiVaultPageDeleteFAB(),
+                          })),
                   _ => const Text('whoops'),
                 }),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

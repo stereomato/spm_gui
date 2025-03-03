@@ -183,11 +183,14 @@ class _SPMguiGeneratorPageSaveFABstate
             // according to the description of the snackbar duration
             // it should be 4 seconds, but instead seems to be 4.5?
             // maybe the result of how I handle this
+            // the app now switches to the vault page, so there's no need to do
+            // this anymore, but keeping the code commented just in case.
+            /*
             Future.delayed(const Duration(milliseconds: 4500), () {
               setState(() {
                 fabIcon = Icons.save;
               });
-            });
+            });*/
             // show snackbar
             ScaffoldMessenger.of(context)
                 .showSnackBar(const SnackBar(content: Text("Saved.")));

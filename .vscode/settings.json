@@ -1,5 +1,5 @@
 {
-  "cmake.sourceDirectory": "/home/pearsche/Documents/SoftwareDevelopment/Repositories/Personal/spm_gui/spm_gui/linux",
-  "dart.flutterSdkPath": ".fvm/versions/stable",
-  "java.compile.nullAnalysis.mode": "automatic"
+  //"cmake.sourceDirectory": "/home/stereomato/Documents/Software Development/Repositories/Personal/spm_gui/linux",
+  //"java.compile.nullAnalysis.mode": "automatic",
+  //"dart.flutterSdkPath": ".fvm/versions/stable"
 }
